@@ -6,6 +6,8 @@
 
 这里有一个极简主义的博客，让你完全控制你的博客。"
 
+<a href="https://buycoffee.top/blog/tech/nextme">项目详细介绍</a>
+
 ![screen-shot-one](/.github/shot.jpeg)
 
 - **框架**: [Next.js](https://nextjs.org/)
