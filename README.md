@@ -1,5 +1,7 @@
 <h1 align="center">NextMe</h1>
 
+<a href="README_CN.md">简体中文</a>
+
 <strong>NextMe is a personal website built with Next.js and Tailwind CSS.</strong>
 
 "Tired of various CMS and external dependencies?
