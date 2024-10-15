@@ -1,0 +1,290 @@
+---
+title: 'Blog Image Optimization'
+publishedAt: '2024-08-22'
+summary: 'Image Optimization'
+image: '/blog-img/image-optimization/cover.webp'
+rssImage: '/blog-img/image-optimization/cover.jpeg'
+category: 'Tech'
+ai: '博客分享了如何通过优化图片加载和缓存来提升博客页面的用户体验与构建速度。'
+---
+
+## 前言
+
+在博客中，图片的优化是非常值得讨论的话题。
+
+在针对此博客站点中的图片组件进行优化折腾后，
+
+这篇博客将针对
+
+- 构建时优化图片
+- 使用缓存加速构建
+
+这两个方面进行一些分享。
+
+## 优化目标
+
+在网页浏览中，累计布局偏移(CLS)常常会引起不好的用户体验。
+
+[Cumulative Layout Shift (CLS)  |  Articles  |  web.dev](https://web.dev/articles/cls?hl=zh-cn)
+
+而在博客页面中，图片的加载往往会引起这种现象。
+
+![alt: 图片加载导致的布局偏移](/blog-img/image-optimization/CleanShot_2024-08-22_at_11.23.04.gif)
+
+从动图中可以看出，当页面加载完成时，图片尚未加载完成，并且没有宽度与高度的信息，因此在图片完成加载后，图片如同突然出现一样，并且会将所在位置撑开，导致了布局偏移。
+
+这样子会给用户带来非常不好的用户体验：
+
+1. 图片加载没有过渡，视觉体验不好。
+2. 在弱网环境下，用户无法知道是否存在图片。
+
+因此我们可以从三方面去解决这个问题：
+
+- **获取图片的元信息**，获取宽高等必需信息。
+- **为图片生成占位符**，并给图片加载完成加上动画。
+- **压缩图片**，在保证图片质量的同时降低带宽压力。
+
+## 项目架构
+
+首先，目前的博客架构下，每个博客页面都是在构建的时候进行独立生成静态页面，原理是使用 Next.js 中的 generateStaticParams 。
+
+```go
+export async function generateStaticParams() {
+  let getPost = getBlogPosts()
+  getPost = getPost.filter((post) => post.metadata.category !== 'Daily')
+
+  return getPost.map((post) => ({
+    slug: post.slug,
+  }))
+}
+```
+
+在构建过程中，构建器将会针对每一个博客页面，通过 **_next-mdx-remote_** 将 markdown 文件转化为组件树。
+
+```go
+let components = {
+  h1: CreateHeading(1),
+  h2: CreateHeading(2),
+  h3: CreateHeading(3),
+  h4: CreateHeading(4),
+  h5: CreateHeading(5),
+  h6: CreateHeading(6),
+  img: CenterImage,
+  a: CustomLink,
+  Callout,
+  ProsCard,
+  ConsCard,
+  code: Code,
+  Table,
+  TechCard,
+}
+
+export function CustomMDX(props) {
+  return (
+    <MDXRemote
+      {...props}
+      components={{ ...components, ...(props.components || {}) }}
+    />
+  )
+}
+
+```
+
+具体可参考往期文章：
+
+[2024 Blog Refresh](https://buycoffee.top/blog/tech/blog-2024)
+
+在构建过程中，构建器会将 md 文件中的图片转化为自定义的图片组件。
+
+```go
+![Code page (1).png](</blog-img/blog-2024/Code_page_(1).png>)
+
+async function CenterImage(props: { src: string; alt: string })
+```
+
+构建器会将图片路径与图片名传入到自定义组件中，因此，我们可以在自定义组件中进行对图片的优化。
+
+优化包含**生成占位符**，**获取图片元信息**与**压缩优化图片**三个步骤。
+
+从整体来看，可以将过程简化为：
+
+![alt: 图片构建时优化过程](/blog-img/image-optimization/Frame_13.png)
+
+### 生成占位符
+
+我们可以采用 Plaiceholder 库来快速为图片生成占位符。
+
+[Plaiceholder](https://plaiceholder.co/docs)
+
+在本项目中，采用提取图片颜色的方式，将颜色作为 div 背景颜色的方式作为占位符。
+
+### 获取图片元信息
+
+在获取占位符的同时，将图片文件的 metadata 也提取出来，其中包含了图片的宽高信息，这是避免布局偏移的核心参数。
+
+![ray-so-export.png](/blog-img/image-optimization/ray-so-export.png)
+
+最终将图片信息与占位符信息作为一个对象返回到组件中。
+
+### 构建博客图片组件
+
+目前，我们已经获取到了图片的宽高信息以及占位符所需要的颜色信息，通过构建一个客户端的图片组件，就可以将信息组合起来，并搭配上图片的加载动画。
+
+> 动画灵感来源于：[https://www.youtube.com/watch?v=7hS9b6n7HrM&t=271s](https://www.youtube.com/watch?v=7hS9b6n7HrM&t=271s)
+
+```go
+const [isLoading, setIsLoading] = useState(true)
+
+<div
+	className="absolute inset-0 rounded-lg"
+	style={{ backgroundColor: hex }}
+/>
+<img
+	className={cn('relative h-full w-full rounded-lg border border-solid border-neutral-200 object-cover transition-all duration-500 dark:border-neutral-800 dark:brightness-75 dark:hover:brightness-100',
+            isLoading ? 'opacity-0 blur-lg' : 'opacity-100 blur-0')}
+	width={width}
+	height={height}
+	alt={alt}
+	src={src}
+	onLoad={() => setIsLoading(false)}
+/>
+```
+
+通过一个 div 配合 backgroundColor 的设置即可为图片增加颜色占位符，而占位符的宽高则取决于图片的宽高，先前在元信息中提取到的宽高信息即可在此使用。
+
+在构建时获取图片信息并设置好宽高数据，可直接避免了图片从未加载到加载后所造成的布局偏移。
+
+在 Next.js 中，'next/image’ 也是通过分析静态导入图片的宽高进行提前设置，从而避免布局偏移的发生。
+
+[Optimizing: Images](https://nextjs.org/docs/app/building-your-application/optimizing/images)
+
+在图片未加载完全时，效果为一个类似色块的占位符。
+
+![alt: 图片未加载完成状态](/blog-img/image-optimization/CleanShot_2024-08-22_at_14.16.252x.png)
+
+此外，通过搭配 onLoad 函数，可以在图片加载完成后进行一些后续操作。使用 useState 在记录图片的加载状态，搭配 css 中的 transition、opacity 与 blur 参数，可以在图片完成加载后，创建一个流畅的过渡效果。
+
+![CleanShot 2024-08-22 at 14.26.50.gif](/blog-img/image-optimization/CleanShot_2024-08-22_at_14.26.50.gif)
+
+完整博客图片组件参考代码如下：
+
+[blog-image.tsx](https://gist.github.com/hamster1963/5c848e47f69d049fb869e375170fc467)
+
+至此，对于布局偏移的图片加载优化的过程就先告一段落了。
+
+接下来，我们还需要对于图片大小进行优化。
+
+### 图片大小优化
+
+对于图片优化，有许多不同的方案，可以使用外部的优化 API，比如
+
+- Vercel Image Optimization
+
+[Image Optimization with Vercel](https://vercel.com/docs/image-optimization)
+
+- Cloudflare Image Optimization
+
+[Overview | Cloudflare Image Optimization docs](https://developers.cloudflare.com/images/)
+
+- Cloudinary
+
+[Image and Video Upload, Storage, Optimization and CDN](https://cloudinary.com/)
+
+这些产品都提供对图片优化的 API 服务，在少量图片的情况下，选用这些产品也可快速优化图片。
+
+但是对于博客站点来说，往往图片的数量并不可控，并且随着博客文章数量的增加，图片的数量也会指数级上涨，因此在本地构建时对图像进行优化，也是一种不错的方案。
+
+在 Next.js 中，内置了图片优化的方式，通过 \_next/image 路径即可针对图片进行优化，但对于尚存储在本地的图片来说，这种方式并不可用。
+
+但其内核中， 图片优化是采用 sharp 库去进行优化图片的流程的，因此我们也可以在构建时使用 sharp 针对博客内图片进行优化。
+
+```go
+const originalBuffer = await getFileBufferLocal(imagePath)
+const optimizedBuffer = await sharp(originalBuffer)
+      .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 90, lossless: true })
+      .toBuffer()
+```
+
+在代码中，我们通过读取本地图片文件，并通过 sharp 将其转化为 webp 格式（可大大降低图片大小），并通过设置 lossless 与 quality，保证图片质量不会受到太大程度的衰减。
+
+在优化后，重新将其存储到 public 文件夹中，传递新的图片路径给博客图片组件。
+
+```go
+// 保存优化后的图片到 public 目录
+await fs.writeFile(publicPath, optimizedBuffer)
+```
+
+一切就绪，让我们开始构建吧。
+
+![CleanShot 2024-08-22 at 15.07.24@2x.png](/blog-img/image-optimization/CleanShot_2024-08-22_at_15.07.242x.png)
+
+在经过几次构建后，就会发现一个问题，构建时间真的是太长了。
+
+因此，我们将会针对最后一个问题：**构建性能**，进行优化。
+
+## 构建性能优化
+
+目前，没有做任何优化的情况下，每次构建中，都会针对每一张图片进行上述的优化流程
+
+1. 获取占位符与元信息
+2. 生成优化后图片
+
+因此，每次构建中其实都在重复针对图片进行优化，因此，我们应该将已经优化过的图片与信息缓存起来，在下次构建时从首先从缓存中获取，不存在则再进行优化。
+
+<aside>
+💡 需要注意的是，Next.js 的构建缓存路径为 **.next/cache/****
+
+</aside>
+
+我们将提取的占位符与元信息、优化后的图片一起存储到缓存中。
+
+其中，文件名采用图片路径生成的 MD5 值。
+
+```go
+// 使用文件路径生成 MD5 哈希值
+const contentHash = crypto.createHash('md5').update(imagePath).digest('hex')
+const cacheDir = path.join(
+    process.cwd(),
+    '.next',
+    'cache',
+    'optimized-images'
+  )
+const placeholderCacheFileName = `${contentHash}-placeholder.json`
+const placeholderCachePath = path.join(cacheDir, placeholderCacheFileName)
+// 保存占位图信息到缓存
+await fs.mkdir(cacheDir, { recursive: true })
+await fs.writeFile(placeholderCachePath, JSON.stringify(preImage))
+
+// 保存优化后的图片到缓存目录和 public 目录
+await fs.writeFile(cachePath, optimizedBuffer)
+await fs.writeFile(publicPath, optimizedBuffer)
+```
+
+在构建时，在缓存中检索到相同文件名的图片时，就可以将其写入到 public 文件夹中。
+
+```go
+// 如果缓存存在，将其复制到 public 目录
+await fs.mkdir(publicDir, { recursive: true })
+await fs.copyFile(cachePath, publicPath)
+```
+
+完整参考代码如下：
+
+[mdx.tsx](https://gist.github.com/hamster1963/eb264f2a8e0f391a40cda75fb27d418a)
+
+通过这种方式，可以大幅降低重复构建时所需的时间与运算性能。
+
+![CleanShot 2024-08-22 at 15.26.30@2x.png](/blog-img/image-optimization/CleanShot_2024-08-22_at_15.26.302x.png)
+
+## 最终效果
+
+在这个过程中，我们对图片进行了用户体验方面以及图片文件大小方面的优化。
+
+在优化后的页面中，每张图片的大小约为 ～100kb 左右，且看起来质量也十分不错。
+
+同时构建后的静态页面中，已嵌入的图片占位符也很好的解决了先前的布局偏移的问题。
+
+欢迎在不同的博客页面中体验这一效果，同时也欢迎打开开发者工具来查看已优化图片的信息。
+
+**Faster than fast.**

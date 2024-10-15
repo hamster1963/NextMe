@@ -1,0 +1,149 @@
+---
+title: 'First Load JS Optimization'
+publishedAt: '2024-04-25'
+summary: 'First Load JS'
+image: '/blog-img/first-load-js/cover.webp'
+rssImage: '/blog-img/first-load-js/cover.jpeg'
+category: 'Tech'
+ai: '本文介绍了如何通过动态导入优化前端页面性能，特别是减少首屏加载时间。作者通过Next.js框架和@next/bundle-analyzer工具，分析并优化了首屏JavaScript的大小。采用懒加载技术，延迟了重大依赖包的加载，显著提高了页面的加载速度和性能，尤其是在图表显示等重组件上的应用。文中还展示了优化前后的对比数据，验证了优化措施的有效性。'
+---
+
+在前端页面中，性能指标是常常被提及的话题，目前的指标通常由以下几个数据组成：
+
+1. 服务器响应时间：用户访问网站后需要多久时间才会获得响应。
+2. 页面渲染时间：页面完全可见以及可交互所需要的时间。
+3. 用户交互时间：用户在页面上进行关键交互的所需时间。（比如添加商品至购物车）
+
+更详细的介绍可以参考以下两篇 Vercel 官方撰写的博客。
+
+[Guide to fast websites with Next.js: Tips for maximizing server speeds and minimizing client burden – Vercel](https://vercel.com/blog/guide-to-fast-websites-with-next-js-tips-for-maximizing-server-speeds)
+
+[Speed Insights Overview](https://vercel.com/docs/speed-insights)
+
+## 目标优化站点
+
+通常在页面开发过程中，我们可以采用[https://pagespeed.web.dev/](https://pagespeed.web.dev/)或 Chrome 浏览器中自带的 Lighthouse 来进行页面性能的简单测试。
+
+这是我们未优化的页面：
+
+![Untitled](/blog-img/first-load-js/Untitled.png)
+
+可以看到目前站点首屏的 Lighthouse 性能测试中，**LCP(Largest Contentful Paint)** 与 **Speed Index** 两项指标的表现并不是很好。
+
+在进行全部的优化之前，先让我们看一下构建的日志结果。
+
+![Untitled](/blog-img/first-load-js/Untitled%201.png)
+
+不难看出，在构建结果中，首屏的页面大小（Size）与首次需要加载的 JS 大小（First Load JS）相对于其他的页面突出不少，而页面大小与 First Load JS 与 **LCP(Largest Contentful Paint)** 的分数息息相关。因此我们先对首屏的 JS 大小进行分析。
+
+## 分析首屏 JS
+
+站点使用 Next.js 进行构建，可以通过 `@next/bundle-analyzer` 包来进行 JS 捆绑包的分析。
+
+```bash
+bun i @next/bundle-analyzer
+```
+
+在项目根目录下的 `next.config.mjs` 中进行分析的配置。
+
+```jsx
+import withBundleAnalyzer from '@next/bundle-analyzer'
+
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  experimental: {
+    optimisticClientCache: true,
+    swcMinify: true,
+    gzipSize: true,
+    taint: true,
+  },
+}
+export default bundleAnalyzer(nextConfig)
+```
+
+配置完成后，通过设置环境变量`ANALYZE`进行使用 bundle-analyzer 分析的构建:
+
+```bash
+ANALYZE=true bun run build
+```
+
+在构建过程中，浏览器会自动打开三个页面。
+
+1. nodejs.html 显示服务器端的所有捆绑包。
+2. edge.html 显示在边缘计算中的所有捆绑包。
+3. client.html 显示客户端的所有捆绑包。
+
+_在本项目中，由于是采用静态部署，因此通过分析 client.html 即可。_
+
+首先在看看首页的组件构成：
+
+![Untitled](/blog-img/first-load-js/Untitled%202.png)
+
+主要由网络信息图表，订阅列表以及服务器列表构成。
+
+在 client.html 中，筛选出首页：
+
+![Untitled](/blog-img/first-load-js/Untitled%203.png)
+
+分析页面上显示的捆绑包，所占的面积越大，表示捆绑包越大。
+
+![Untitled](/blog-img/first-load-js/Untitled%204.png)
+
+不难看出，recharts 包所占的空间不小，而此包主要用于网络速率显示图表中：
+
+![Untitled](/blog-img/first-load-js/Untitled%205.png)
+
+因此可以通过优化此部分的组件内包导入来优化 First Load JS。
+
+## 优化包导入
+
+在官方的最佳实践中，我们可以采用 **Lazy Loading** 的方式，尽可能延迟那些比较重的依赖包。
+
+[Optimizing: Lazy Loading](https://nextjs.org/docs/app/building-your-application/optimizing/lazy-loading)
+
+动态导入是其中的一种方式，原理十分简单，在初次获取页面时，并不会去获取需要动态导入的依赖包，只有在页面加载后，才会根据条件去进行获取依赖包，这对于大型网站的优化十分有用，比如需要用户点击后才会出现的图表，或者是需要登录后才会显示的一些用户组件，这些都是无需在第一次获取页面时就去下载的数据，因此都可以使用动态导入来进行优化。
+
+![Untitled](/blog-img/first-load-js/Untitled%206.png)
+
+那就着手优化，这是优化前的组价导入：
+
+```tsx
+import NetworkChart from '@/components/NetworkChart'
+```
+
+将其改成动态导入，并且加上一个骨架进行占位显示：
+
+```tsx
+import dynamic from 'next/dynamic'
+const NetworkChart = dynamic(() => import('@/components/NetworkChart'), {
+  ssr: false,
+  loading: () => <Skeleton className="mt-2 h-[80px] w-full rounded-[10px]" />,
+})
+```
+
+这样子，在页面初次加载的时候，就不用加载 recharts 依赖包，而是等到页面加载后，再进行下载，同时骨架使得页面的 Cumulative Layout Shift 保持较低的水平。
+
+![Untitled](/blog-img/first-load-js/Untitled%207.png)
+
+使用动态导入后，重新进行构建：
+
+![Untitled](/blog-img/first-load-js/Untitled%208.png)
+
+可以看到，Size 从 115kB → 7.63kB ，同时 FLJ 也从 267kB → 159kb，使用动态导入后优化效果十分显著。
+
+重新进行 Lighthouse 的测试，可以发现 LCP 也从先前的 4.6s 优化到1.6s。
+
+![Untitled](/blog-img/first-load-js/Untitled%209.png)
+
+欢迎访问页面来试试首屏显示的速度。
+
+[HomeDash](https://dash.buycoffee.top/)
+
+## 结论
+
+在优化首屏显示中，通过将一些比较重的依赖包采用动态导入的方式进行导入，不仅优化了页面大小也优化了初次加载 JS 大小，使得页面在初次加载的时候速度更快。
