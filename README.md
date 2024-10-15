@@ -2,7 +2,9 @@
 
 <strong>NextMe is a personal website built with Next.js and Tailwind CSS.</strong>
 
-"Tired of various CMS and external dependencies? Here is a minimalist blog that gives you full control to customize your blog."
+"Tired of various CMS and external dependencies?
+
+Here is a minimalist blog that gives you full control to customize your blog."
 
 ![screen-shot-one](/.github/shot.jpeg)
 
