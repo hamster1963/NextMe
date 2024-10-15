@@ -8,6 +8,8 @@
 
 Here is a minimalist blog that gives you full control to customize your blog."
 
+<a href="https://buycoffee.top/blog/tech/nextme">Project details(中文)</a>
+
 ![screen-shot-one](/.github/shot.jpeg)
 
 - **Framework**: [Next.js](https://nextjs.org/)
