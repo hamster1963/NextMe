@@ -21,12 +21,14 @@ Here is a minimalist blog that gives you full control to customize your blog."
 - loading skeleton: Beautiful loading skeletons for your blog posts.
 - mobile-friendly: Optimized for mobile devices.
 - dark mode: Supports dark mode.
+- static export: Static HTML export for performance and SEO.
 - SEO: Optimized for search engines.
 
 ## Deploy your own
 
-- Vercel [Deploy document](https://vercel.com/docs/concepts/deployments/overview)
-- Cloudflare Pages [Deploy document](https://developers.cloudflare.com/pages/framework-guides/nextjs/deploy-a-static-nextjs-site/)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhamster1963%2Fnextme&env=SITE_URL,Hamster1963)
+
+- Cloudflare Pages - Framework preset - Next.js(Static HTML Export)
 
 ## Environment variables
 
@@ -43,3 +45,7 @@ bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Page Speed Insights
+
+![Page Speed Insights](/.github/speed.png)
