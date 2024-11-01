@@ -9,6 +9,7 @@ import Link from 'next/link'
 import {
   HomeIcon,
   InboxIcon,
+  SparklesIcon,
   Square2StackIcon,
 } from '@heroicons/react/20/solid'
 
@@ -27,6 +28,11 @@ export const siteUrlList = [
     name: 'Blog',
     url: '/blog',
     icon: InboxIcon,
+  },
+  {
+    name: 'Chat',
+    url: '/guestbook',
+    icon: SparklesIcon,
   },
 ]
 
