@@ -24,7 +24,7 @@ export default function NowPlayingInit() {
     "artist": "Khalil Fong",
     "artist_url": "",
     "artwork_placeholder_url": "",
-    "artwork_url": "https://img.buycoffee.tech/IMG_4040.jpeg",
+    "artwork_url": "https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg",
     "client_type": "Apple Music",
     "play_percent": 0,
     "play_time": "",
