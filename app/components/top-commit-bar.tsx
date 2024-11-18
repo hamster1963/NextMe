@@ -28,9 +28,7 @@ export default function TopCommitBar({
       >
         <section className="flex items-center gap-1.5">
           <Disc className="h-4 w-4 flex-shrink-0" />
-          <p className="text-[12.5px] font-medium">
-            Uncommitted comments
-          </p>
+          <p className="text-[12.5px] font-medium">Uncommitted comments</p>
         </section>
         <section className="flex items-center gap-1.5">
           <button

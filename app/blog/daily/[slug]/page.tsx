@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next'
 import { getBlogPosts } from 'app/db/blog'
 import DailyContent from './blog-content'

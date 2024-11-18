@@ -10,7 +10,7 @@ export async function GET() {
     site_url: process.env.SITE_URL!,
     feed_url: process.env.SITE_URL + '/rss',
     language: 'zh-CN',
-    image_url: process.env.SITE_URL+'/avatar.jpeg',
+    image_url: process.env.SITE_URL + '/avatar.jpeg',
     generator: 'Next.js',
     custom_elements: [
       {
@@ -38,7 +38,7 @@ export async function GET() {
       enclosure: {
         url: post.metadata.rssImage
           ? process.env.SITE_URL + post.metadata.rssImage
-          :  process.env.SITE_URL +'/opengraph-image.png',
+          : process.env.SITE_URL + '/opengraph-image.png',
       },
     })
   })

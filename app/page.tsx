@@ -71,7 +71,6 @@ export default async function Page() {
   )
 }
 
-
 function Photos() {
   const photo_1 = desktop
   const photo_2 = shoe

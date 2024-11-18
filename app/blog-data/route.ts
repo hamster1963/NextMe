@@ -63,7 +63,7 @@ export async function GET() {
             publishedAt: post.metadata.publishedAt,
           },
         }))
-        .sort(sortByPublishedAt), 
+        .sort(sortByPublishedAt),
     },
     daily_blog_data: {
       count: dailyBlogPosts.length,
@@ -77,7 +77,7 @@ export async function GET() {
             publishedAt: post.metadata.publishedAt,
           },
         }))
-        .sort(sortByPublishedAt), 
+        .sort(sortByPublishedAt),
     },
   }
 

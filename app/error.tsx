@@ -10,9 +10,7 @@ export default function Error({ error }: { error: Error; reset: () => void }) {
 
   return (
     <div>
-      <p>
-        Something wrong, try refreshing.
-      </p>
+      <p>Something wrong, try refreshing.</p>
     </div>
   )
 }

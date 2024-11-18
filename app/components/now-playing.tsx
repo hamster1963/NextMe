@@ -11,8 +11,6 @@ type MusicData = {
   client_type: 'Apple Music' | 'spotify' | string
 }
 
-
-
 const clientComponents = {
   'Apple Music': NowPlayingClientApple,
   spotify: NowPlayingClientSpotify,
@@ -20,19 +18,20 @@ const clientComponents = {
 
 export default function NowPlayingInit() {
   const data = {
-    "album": "Timeless",
-    "artist": "Khalil Fong",
-    "artist_url": "",
-    "artwork_placeholder_url": "",
-    "artwork_url": "https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg",
-    "client_type": "Apple Music",
-    "play_percent": 0,
-    "play_time": "",
-    "player_state": true,
-    "spotify_url": "",
-    "timestamp": 1726282587,
-    "total_time": "",
-    "track_name": "Red Bean"
+    album: 'Timeless',
+    artist: 'Khalil Fong',
+    artist_url: '',
+    artwork_placeholder_url: '',
+    artwork_url:
+      'https://pub-85fe3948f0644e2cba137d74f3630b8b.r2.dev/IMG_4040.jpeg',
+    client_type: 'Apple Music',
+    play_percent: 0,
+    play_time: '',
+    player_state: true,
+    spotify_url: '',
+    timestamp: 1726282587,
+    total_time: '',
+    track_name: 'Red Bean',
   }
 
   return (
@@ -70,7 +69,6 @@ export default function NowPlayingInit() {
 }
 
 function NowPlaying({ fallbackData }: { fallbackData: MusicData }) {
-
   const ClientComponent = clientComponents[fallbackData.client_type]
 
   if (ClientComponent) {

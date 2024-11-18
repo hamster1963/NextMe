@@ -63,10 +63,11 @@ export default function TOC({ headings }) {
           >
             <a
               onClick={() => scrollToHeading(heading.id)}
-              className={`cursor-pointer text-[13px] font-medium transition-colors hover:text-neutral-800 dark:hover:text-neutral-400 ${activeId === heading.id
-                ? 'text-neutral-800 dark:text-neutral-400'
-                : 'text-neutral-400 dark:text-neutral-600'
-                }`}
+              className={`cursor-pointer text-[13px] font-medium transition-colors hover:text-neutral-800 dark:hover:text-neutral-400 ${
+                activeId === heading.id
+                  ? 'text-neutral-800 dark:text-neutral-400'
+                  : 'text-neutral-400 dark:text-neutral-600'
+              }`}
             >
               {heading.text}
             </a>

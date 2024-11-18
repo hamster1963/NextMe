@@ -54,13 +54,32 @@ async function CenterImage(props: { src: string; alt: string }) {
   const { src, alt } = props
 
   if (src.startsWith('http')) {
-    return <BlogImage
-      src={src}
-      alt={alt}
-    />
+    return <BlogImage src={src} alt={alt} />
   }
 
   const imagePath = src.replaceAll('%20', ' ')
+
+  const isDev = process.env.NODE_ENV === 'development'
+
+  if (isDev) {
+    return (
+      <>
+        <BlogImage
+          src={imagePath}
+          alt={alt}
+          width={1920}
+          height={1080}
+          hex={'ffffff'}
+        />
+        {alt.startsWith('alt:') && (
+          <p className="-mb-0 mt-2 text-center text-[13px] text-neutral-400 dark:text-neutral-600">
+            {alt.replace('alt:', '')}
+          </p>
+        )}
+      </>
+    )
+  }
+
   const contentHash = crypto.createHash('md5').update(imagePath).digest('hex')
 
   const cacheDir = path.join(
@@ -78,7 +97,7 @@ async function CenterImage(props: { src: string; alt: string }) {
     const cachedPlaceholder = await fs.readFile(placeholderCachePath, 'utf-8')
     preImage = JSON.parse(cachedPlaceholder)
   } catch (error) {
-    console.log('placeholder cache not found, generating new', placeholderCachePath)
+    console.log('placeholder cache not found, generating new', imagePath)
     preImage = await getPlaceholderBlogImage(imagePath)
 
     await fs.mkdir(cacheDir, { recursive: true })
@@ -233,21 +252,21 @@ export function slugify(str) {
 
 const CreateHeading =
   (level) =>
-    ({ children }) => {
-      const slug = slugify(children)
-      return React.createElement(
-        `h${level}`,
-        { id: slug },
-        [
-          React.createElement('a', {
-            href: `#${slug}`,
-            key: `link-${slug}`,
-            className: 'anchor',
-          }),
-        ],
-        children
-      )
-    }
+  ({ children }) => {
+    const slug = slugify(children)
+    return React.createElement(
+      `h${level}`,
+      { id: slug },
+      [
+        React.createElement('a', {
+          href: `#${slug}`,
+          key: `link-${slug}`,
+          className: 'anchor',
+        }),
+      ],
+      children
+    )
+  }
 
 let components = {
   h1: CreateHeading(1),
