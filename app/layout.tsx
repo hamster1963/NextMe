@@ -3,10 +3,10 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import React from 'react'
-import Nav from './components/nav'
 import Footer from './footer'
 import NewBlurLayer from './components/blur-layer'
 import type { Viewport } from 'next'
+import Nav from './components/nav'
 
 export const viewport: Viewport = {
   width: 'device-width',

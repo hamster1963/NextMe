@@ -32,7 +32,7 @@ const item = {
   },
 }
 
-export default async function Page() {
+export default function Page() {
   return (
     <section>
       <section className="sm:px-14 sm:pt-6">
