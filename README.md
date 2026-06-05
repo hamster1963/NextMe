@@ -34,7 +34,7 @@ Here is a minimalist blog that gives you full control to customize your blog."
 
 - Cloudflare Pages - Framework preset - Next.js(Static HTML Export)
 
-  Environment variable add PNPM_VERSION = 11.5.1
+  Environment variable add PNPM_VERSION = 11.5.1 and NODE_VERSION = 26.3.0
 
 ## Environment variables
 
