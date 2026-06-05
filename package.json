@@ -34,7 +34,7 @@
     "lodash": "^4.18.1",
     "lucide-react": "^0.454.0",
     "next": "^14.2.35",
-    "next-mdx-remote": "^5.0.0",
+    "next-mdx-remote": "^6.0.0",
     "plaiceholder": "^3.0.0",
     "postcss": "^8.5.15",
     "prettier-plugin-packagejson": "^2.5.22",
