@@ -31,7 +31,7 @@
 
 - Cloudflare Pages - 框架预设 - Next.js(Static HTML Export)
 
-  环境变量添加 BUN_VERSION = 1.1.29
+  环境变量添加 PNPM_VERSION = 11.5.1
 
 ## 环境变量
 
@@ -43,8 +43,8 @@
 首先，运行开发服务器：
 
 ```bash
-bun i
-bun run dev
+pnpm install
+pnpm dev
 ```
 
 打开浏览器访问 [http://localhost:3000](http://localhost:3000) 查看结果。

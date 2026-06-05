@@ -41,7 +41,7 @@ ai: '本文介绍了如何通过动态导入优化前端页面性能，特别是
 站点使用 Next.js 进行构建，可以通过 `@next/bundle-analyzer` 包来进行 JS 捆绑包的分析。
 
 ```bash
-bun i @next/bundle-analyzer
+pnpm add -D @next/bundle-analyzer
 ```
 
 在项目根目录下的 `next.config.mjs` 中进行分析的配置。
@@ -69,7 +69,7 @@ export default bundleAnalyzer(nextConfig)
 配置完成后，通过设置环境变量`ANALYZE`进行使用 bundle-analyzer 分析的构建:
 
 ```bash
-ANALYZE=true bun run build
+ANALYZE=true pnpm build
 ```
 
 在构建过程中，浏览器会自动打开三个页面。

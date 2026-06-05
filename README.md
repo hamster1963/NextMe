@@ -34,7 +34,7 @@ Here is a minimalist blog that gives you full control to customize your blog."
 
 - Cloudflare Pages - Framework preset - Next.js(Static HTML Export)
 
-  Environment variable add BUN_VERSION = 1.1.29
+  Environment variable add PNPM_VERSION = 11.5.1 and NODE_VERSION = 26.3.0
 
 ## Environment variables
 
@@ -46,8 +46,8 @@ Here is a minimalist blog that gives you full control to customize your blog."
 First, run the development server:
 
 ```bash
-bun i
-bun run dev
+pnpm install
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
